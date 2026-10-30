@@ -1,0 +1,13 @@
+{
+  "release_status": "preview_core_withheld",
+  "example": "NAS-Bench-101 / CIFAR-10 main experiment",
+  "space": "nb101",
+  "dataset": "cifar10",
+  "queries_per_run": 200,
+  "initial_population": 10,
+  "search_runs": 10,
+  "online_llm": false,
+  "imported_performance_labels": 0,
+  "validation": {"budget": 108, "metric": "final_validation_accuracy", "repeat_aggregation": "all_available_mean"},
+  "test": {"budget": 108, "metric": "final_test_accuracy", "repeat_aggregation": "all_available_mean", "winner_only_after_all_winners_sealed": true}
+}
