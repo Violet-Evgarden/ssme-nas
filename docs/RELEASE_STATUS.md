@@ -1,36 +1,47 @@
-# Release status: preview-core-withheld
+# Configuration and integration guide
 
-This version is intentionally incomplete because the research is unpublished.
-It does not contain a hidden time lock, a fabricated implementation, corrupted
-scientific conditions, or misleading dependency errors.
+## Inspect the interface
 
-## Missing modules
+Run these commands from the repository root:
 
-1. Frozen concept artifacts and LLM inference clients. The actual NB101/NB201
-   request JSON files are available in `prompts/`.
-2. Native graph normalization, canonical identity, legal-action enumeration,
-   and structural context extraction.
-3. Pool-local observed-neighbor completion and rank-feedback construction.
-4. Conditional partition compilation and contextual evidence retrieval.
-5. Numerical memory scoring and the complete mutation-proposal implementation.
-6. Benchmark readers, access-permission checks, caches, and full private run
-   orchestration, including exact saved seeds and checkpoint recovery.
+```bash
+python run_search.py --describe
+python -m unittest discover -s tests -v
+```
 
-`private_core.py` contains only explicit exceptions. Both the CLI and public
-integration scaffold reject execution before reading a configuration or
-evaluating any architecture. There is no environment variable, command-line
-switch, bundled archive, historical commit, or alternative random implementation
-that supplies these missing components.
+For requirements and supported execution, see the [README](../README.md).
 
-## What still works
+## Select a configuration
 
-The README, configuration examples, controller components, unit tests, and
-`--describe` output can be inspected. Their tests use synthetic records, not
-benchmark outcomes. The tests verify implementation mechanics only.
+The JSON files in [`configs/`](../configs/) specify the search space, dataset,
+query budget, initial population and number of search runs. The `validation`
+and `test` objects identify the benchmark measurements and repeat aggregation.
+Initial-population evaluations are included in `queries_per_run`.
 
-## Before a future full release
+## Prepare the concepts
 
-The maintainers must supply the missing scientific implementation, validate the
-released files against archived experiments, add reproducible dependency/data
-instructions, document licensing, and audit information boundaries again.
-This preview makes no commitment about the timing of that release.
+Use the request JSON for the selected search space, parse the model's JSON
+response, and validate its structure, field coverage and bundle uniqueness.
+The [prompt guide](../prompts/README.md) gives the steps and response schemas.
+Save the validated object as `concepts.json` and retain its request and response
+alongside it. Load the object's `concepts` array for the controller's `concepts`
+argument. Keep that array fixed during search; observed edit evidence is updated
+after each validation query.
+
+## Connect the interfaces
+
+[`search_pool`](../ssme_nas/controller.py) describes the search-loop integration:
+
+| Argument | Role |
+|---|---|
+| `starts`, `seed`, `pool` | Ten distinct initial genotypes, the search seed and the run identifier |
+| `concepts` | Validated concept list from `concepts.json` |
+| `query_budget` | The configuration's `queries_per_run` |
+| `space` | Canonical architecture identity and native genotype/edit validation |
+| `evaluator` | Validation measurements for queried architectures |
+| `audit` | Persistence of query, measurement and decision records |
+
+The backend contracts are defined in [`contracts.py`](../ssme_nas/contracts.py).
+The controller selects parents, evaluates proposed mutations, updates the
+archive and memory, and returns the validation-selected winner. Final selection
+and winner sealing are implemented in [`selection.py`](../ssme_nas/selection.py).

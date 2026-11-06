@@ -72,7 +72,10 @@ The NAS-Bench-201 request is shared across its three datasets.
 
 The expected output is a `concepts` array; each concept contains a `features`
 array of existing field names and a short structural `meaning`.
-See [prompt format](prompts/README.md) and the accompanying JSON schemas.
+See [concept generation and validation](prompts/README.md) for the request,
+response checks and saved JSON format, and the
+[configuration and integration guide](docs/RELEASE_STATUS.md) for the controller
+interfaces.
 The request files contain no credentials and are not executed by the test suite.
 
 ## License
