@@ -4,11 +4,15 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "ssme-nas"
-version = "0.0.1"
-description = "Pre-publication SSME-NAS framework preview; scientific core withheld"
+version = "1.0.0"
+description = "Evolutionary neural architecture search driven by structural edit memory"
 readme = "README.md"
 requires-python = ">=3.10"
 dependencies = []
+
+[project.optional-dependencies]
+nb101 = ["google-crc32c"]
+nb201 = ["nats-bench", "nas-bench-201", "torch>=2.0", "numpy"]
 
 [tool.setuptools.packages.find]
 include = ["ssme_nas*"]

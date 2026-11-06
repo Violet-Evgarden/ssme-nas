@@ -10,7 +10,8 @@ from run_search import main
 from ssme_nas.controller import search_pool
 from ssme_nas.parent_selection import select_parent
 from ssme_nas.population import bootstrap_archive, retain
-from ssme_nas.private_core import CoreNotReleasedError, compile_memory, propose_mutation
+from ssme_nas.private_core import compile_memory, require_private_core
+from ssme_nas.runner import load_inputs
 from ssme_nas.selection import seal_winners, validation_winner
 
 
@@ -85,28 +86,28 @@ class PublicComponentsTest(unittest.TestCase):
                 seal_winners(path, [dict(pool=0, **record("b", 2))])
             self.assertEqual(json.loads(path.read_text()), first)
 
-    def test_core_stubs_never_supply_scores(self):
-        for function in (compile_memory, propose_mutation):
-            with self.assertRaises(CoreNotReleasedError):
-                function()
+    def test_core_available_and_rejects_missing_evidence(self):
+        self.assertIsNone(require_private_core())
+        with self.assertRaises(ValueError):
+            compile_memory([], [])
 
-    def test_controller_stops_before_using_any_backend(self):
-        with self.assertRaises(CoreNotReleasedError):
+    def test_controller_rejects_invalid_budget_before_using_backend(self):
+        with self.assertRaises(ValueError):
             search_pool(None, None, None, None, None, None, None, None)
 
-    def test_cli_is_explicitly_disabled(self):
+    def test_cli_reports_missing_arguments(self):
         message = io.StringIO()
         with contextlib.redirect_stderr(message):
-            code = main(["--config", "nonexistent-config-must-not-be-opened.json"])
+            code = main(["--config", "nonexistent.json"])
         self.assertEqual(code, 2)
-        self.assertIn("CoreNotReleasedError", message.getvalue())
+        self.assertIn("--benchmark", message.getvalue())
 
     def test_describe_is_read_only(self):
         message = io.StringIO()
         with contextlib.redirect_stdout(message):
             code = main(["--describe"])
         self.assertEqual(code, 0)
-        self.assertIn("preview-core-withheld", message.getvalue())
+        self.assertIn("full-source-release", message.getvalue())
 
     def test_config_examples(self):
         root = Path(__file__).resolve().parents[1]
@@ -114,10 +115,15 @@ class PublicComponentsTest(unittest.TestCase):
         self.assertEqual(len(configs), 4)
         for path in configs:
             config = json.loads(path.read_text())
-            self.assertEqual(config["release_status"], "preview_core_withheld")
+            self.assertEqual(config["release_status"], "full_source_release")
             self.assertFalse(config["online_llm"])
             self.assertEqual(config["imported_performance_labels"], 0)
             self.assertTrue(config["test"]["winner_only_after_all_winners_sealed"])
+            loaded, concepts, starts, space = load_inputs(path)
+            self.assertEqual(loaded, config)
+            self.assertEqual(len(concepts), 12)
+            self.assertEqual(len(starts["seeds"]), 10)
+            self.assertEqual(space.name, config["space"])
 
 
 if __name__ == "__main__":

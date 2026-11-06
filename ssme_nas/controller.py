@@ -1,21 +1,16 @@
-"""Adapted, gated integration scaffold; private scientific modules are absent.
-
-The body documents the selected archived search order. It is not executable
-with the public preview and is not claimed to reproduce archived results.
-"""
+"""Validation-only search with online structural edit memory and elite retention."""
 from ._utils import digest
 from .contracts import AuditSink, SearchSpace, ValidationEvaluator
 from .parent_selection import select_parent
 from .population import bootstrap_archive, retain, value
-from .private_core import compile_memory, propose_mutation, require_private_core
+from .private_core import compile_memory, propose_mutation
 from .selection import validation_winner
 
 
 def search_pool(starts, seed, concepts, query_budget, pool,
                 space: SearchSpace, evaluator: ValidationEvaluator, audit: AuditSink):
-    require_private_core()  # No I/O, evaluation, or fallback before this explicit stop.
-    if query_budget not in (100, 200):
-        raise ValueError("This selected main-experiment scaffold describes Q100/Q200 only.")
+    if isinstance(query_budget, bool) or not isinstance(query_budget, int) or query_budget < 10:
+        raise ValueError("The query budget must include at least ten initial architectures.")
     if len(starts) != 10 or len({space.canonical(tuple(s)) for s in starts}) != 10:
         raise ValueError("Expected ten distinct random initial architectures.")
     archive, parents, events, visited = [], [], [], set()
@@ -43,7 +38,7 @@ def search_pool(starts, seed, concepts, query_budget, pool,
 
     for slot, ops in enumerate(starts):
         parents.append(evaluate(ops, slot))
-    memory = compile_memory(archive, concepts)
+    memory = compile_memory(archive, concepts, space=space)
     for step in range(query_budget - 10):
         if step == 10:
             parents = bootstrap_archive(archive)
@@ -53,6 +48,7 @@ def search_pool(starts, seed, concepts, query_budget, pool,
             raise ValueError("Memory contains missing or out-of-run identities.")
         version = digest(memory.data)
         proposal = propose_mutation(tuple(parent["ops"]), visited, memory, seed, step)
+        proposal["parent_selection"] = parent_event
         space.validate_edit(tuple(parent["ops"]), tuple(proposal["ops"]))
         if space.canonical(tuple(proposal["ops"])) != proposal["architecture_id"]:
             raise ValueError("Proposed genotype and identity disagree.")
@@ -61,7 +57,7 @@ def search_pool(starts, seed, concepts, query_budget, pool,
         gain = value(child) - value(parent)
         parents, retention = retain(parents, child, slot, step)
         # Rejected, zero-gain, and negative-gain observations remain in archive.
-        memory = compile_memory(archive, concepts)
+        memory = compile_memory(archive, concepts, space=space)
         event = dict(
             step=step, parent=parent["architecture_id"], child=child["architecture_id"],
             gain_pp=gain, parent_selection=parent_event, retention=retention,
@@ -72,5 +68,6 @@ def search_pool(starts, seed, concepts, query_budget, pool,
     if len(archive) != query_budget or len(visited) != query_budget:
         raise ValueError("Incomplete query ledger.")
     winner = validation_winner(archive)
-    # A separate private evaluator may read Test only after ALL run winners seal.
-    return dict(pool=pool, queried=archive, events=events, winner=winner, parents=parents)
+    # The runner seals all pools' validation winners before accessing Test.
+    return dict(pool=pool, queried=archive, events=events, winner=winner,
+                parents=parents, final_memory=memory.data)

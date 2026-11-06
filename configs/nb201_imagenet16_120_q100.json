@@ -1,5 +1,7 @@
 {
-  "release_status": "preview_core_withheld",
+  "release_status": "full_source_release",
+  "concepts_file": "../artifacts/concepts/nb201_flash.json",
+  "starts_file": "../artifacts/starts/nb201_imagenet16_120.json",
   "example": "NAS-Bench-201 / ImageNet16-120 main experiment",
   "space": "nb201",
   "dataset": "ImageNet16-120",

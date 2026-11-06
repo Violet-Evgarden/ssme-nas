@@ -1,4 +1,4 @@
-"""SSME-NAS pre-publication framework preview; not a complete NAS package."""
+"""SEME-NAS: evolutionary search driven by structural edit memory."""
 
-__version__ = "0.0.1"
-RELEASE_STATUS = "preview-core-withheld"
+__version__ = "1.0.0"
+RELEASE_STATUS = "full-source-release"

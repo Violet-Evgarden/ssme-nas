@@ -1,4 +1,4 @@
-"""Interfaces only: no native graph adapter, evaluator, or memory is included."""
+"""Interfaces for native search spaces, staged evaluators, and memory."""
 from typing import Any, Mapping, Protocol, Sequence
 
 Genotype = tuple[str, ...]
@@ -36,7 +36,10 @@ class AuditSink(Protocol):
         ...
 
 
-class PrivateCompiler(Protocol):
+class MemoryCompiler(Protocol):
     def compile(self, records: Sequence[Record], concepts: Sequence[Mapping]) -> CompiledMemory:
-        """Compile current-run observed evidence; implementation withheld."""
+        """Compile current-run observed evidence with frozen structural concepts."""
         ...
+
+
+PrivateCompiler = MemoryCompiler  # Compatibility with the original interface name.

@@ -1,5 +1,16 @@
 # Offline concept generation
 
+## Use the supplied concepts
+
+The frozen, validated concept lists are included in
+[`artifacts/concepts/nb101_flash.json`](../artifacts/concepts/nb101_flash.json)
+and [`artifacts/concepts/nb201_flash.json`](../artifacts/concepts/nb201_flash.json).
+The search configurations load these artifacts by default. No API key or LLM
+call is required to run search with them. Each saved concept has its stable
+`id`, structural `features` and `meaning`.
+
+## Recorded requests
+
 The `*_flash_request.json` files are the complete request bodies used for the
 NAS-Bench-101 and NAS-Bench-201 concept constructions. They are recorded inputs,
 not rewritten templates or generated outputs. Their contents, including the
@@ -25,7 +36,7 @@ cross-bundle validation checks.
 The request model identifier and decoding settings are preserved as recorded.
 These files do not contain credentials or perform API calls.
 
-## Generate and save concepts
+## Generate alternative concepts
 
 1. Choose [`nb101_flash_request.json`](nb101_flash_request.json) or
    [`nb201_flash_request.json`](nb201_flash_request.json). Submit its complete
@@ -39,9 +50,11 @@ These files do not contain credentials or perform API calls.
    [`NB201`](nb201_response.schema.json) response schema, then check the
    cross-bundle constraints below.
 4. Retain the validated `concepts.json`, original request and complete provider
-   response together. Read `concepts.json` and pass its `concepts` array to the
-   controller's `concepts` argument. Reuse the fixed array during search; no
-   further LLM call is needed for the mutation loop.
+   response together. Give the search command `--concepts concepts.json`, or
+   normalize the response with `validate_concepts(response, space)` from
+   `ssme_nas.core.memory` and pass its accepted list to `compile_memory`.
+   Reuse the fixed concept list during search; no further LLM call is needed
+   for the mutation loop.
 
 ## Validation checklist
 

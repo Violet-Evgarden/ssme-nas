@@ -2,48 +2,62 @@
 
 **Evolutionary Neural Architecture Search Driven by Structural Edit Memory with LLM-Refined Concepts**
 
-SEME-NAS uses an offline LLM to refine structural concepts, then guides
-evolutionary mutation with edit memory updated from observed validation feedback.
-The Python package name remains `ssme_nas`.
+SEME-NAS refines structural concepts once before search and uses observed edit
+outcomes to guide evolutionary mutation. This repository contains the complete
+search implementation, native search-space adapters, benchmark evaluators,
+frozen concepts and initial populations. The Python package name is `ssme_nas`.
 
 ## Requirements
 
 - Python 3.10 or newer.
-- No third-party Python packages are required for the included controller
-  components and tests.
-- Inspecting the JSON prompts and running the tests require neither a GPU nor
-  an API key.
+- The memory, mutation, controller and offline tests use the Python standard
+  library.
+- NAS-Bench-101 uses a native TFRecord reader; NAS-Bench-201 uses its benchmark
+  API. Both read local official benchmark tables. No network training, GPU or LLM API key is needed
+  for tabular search with the supplied frozen concepts.
 
-## Usage
+Install this package from the repository root:
 
-From the repository root:
+```bash
+python -m pip install -e .
+```
+
+Benchmark installation instructions are in the
+[execution guide](docs/RELEASE_STATUS.md#benchmark-installation). Obtain the
+benchmark files from [NAS-Bench-101](https://github.com/google-research/nasbench),
+[NAS-Bench-201](https://github.com/D-X-Y/NAS-Bench-201), or
+[NATS-Bench](https://github.com/D-X-Y/NATS-Bench).
+
+## Run the search
+
+NAS-Bench-101:
+
+```bash
+python run_search.py --config configs/nb101_cifar10_q200.json --benchmark /path/to/nasbench_only108.tfrecord --output runs/nb101
+```
+
+NAS-Bench-201, CIFAR-10:
+
+```bash
+python run_search.py --config configs/nb201_cifar10_q100.json --benchmark /path/to/NATS-tss-v1_0-3ffb9.pickle.pbz2 --output runs/nb201_cifar10
+```
+
+The default configurations run ten searches with the included concepts and
+initial populations. NAS-Bench-201 also accepts its official `.pth` benchmark.
+Use `--concepts FILE` and `--starts FILE` to supply alternative JSON artifacts;
+use `--validation-only` to finish after validation-based winner selection.
+Choose a fresh output directory for each run.
+
+Read-only inspection and offline tests:
 
 ```bash
 python run_search.py --describe
 python -m unittest discover -s tests -v
 ```
 
-These commands inspect the interface and test the included components. Full
-search execution requires the separate core implementation.
-
-## Programs and files
-
-| Path | Purpose |
-|---|---|
-| `run_search.py` | Command-line interface and implementation-availability check |
-| `ssme_nas/controller.py` | Search-loop integration: initialization, mutation, evaluation and feedback |
-| `ssme_nas/parent_selection.py` | Bootstrap scheduling and validation-based parent tournaments |
-| `ssme_nas/population.py` | Population rebuilding and elite survivor retention |
-| `ssme_nas/selection.py` | Final validation-based selection and winner sealing |
-| `ssme_nas/contracts.py` | Search-space, evaluator, memory and record interfaces |
-| `ssme_nas/private_core.py` | Interface boundary for the separate memory and mutation implementation |
-| `configs/` | NAS-Bench-101 and NAS-Bench-201 experiment configurations |
-| `prompts/` | Actual offline concept-generation requests and response-format schemas |
-| `tests/` | Controller, configuration and prompt-artifact checks |
-
 ## Configurations
 
-| Configuration | Dataset | Validation queries | Initial population |
+| Configuration | Dataset | Queries per run | Initial population |
 |---|---|---:|---:|
 | `nb101_cifar10_q200.json` | CIFAR-10 | 200 | 10 |
 | `nb201_cifar10_q100.json` | CIFAR-10 | 100 | 10 |
@@ -51,33 +65,37 @@ search execution requires the separate core implementation.
 | `nb201_imagenet16_120_q100.json` | ImageNet16-120 | 100 | 10 |
 
 Initial-population evaluations count toward the query budget. Search uses
-validation measurements; test measurements are read for the selected winners.
+validation measurements; test measurements are read only after all
+validation-selected winners have been sealed.
 
-Benchmark resources:
-[NAS-Bench-101](https://github.com/google-research/nasbench) and
-[NAS-Bench-201](https://github.com/D-X-Y/NAS-Bench-201).
+## Programs and files
 
-## LLM prompts
+| Path | Purpose |
+|---|---|
+| `run_search.py` | Command-line configuration, execution and result export |
+| `ssme_nas/core/memory.py` | Observed-neighbor completion, conditional partitions, rank readout and mutation |
+| `ssme_nas/core/nb101.py`, `nb201.py` | Native graph operations, structural fields and candidate edits |
+| `ssme_nas/spaces.py` | Search-space adapter selection |
+| `ssme_nas/controller.py` | Initialization, mutation, evaluation and memory updates |
+| `ssme_nas/parent_selection.py`, `population.py` | Parent tournaments and elite survivor retention |
+| `ssme_nas/evaluators.py` | Benchmark measurements and validation/test stage separation |
+| `ssme_nas/selection.py` | Validation-based winner selection and sealing |
+| `ssme_nas/private_core.py` | Compatibility import path for the released core |
+| `configs/` | Four main-experiment configurations |
+| `artifacts/concepts/` | Frozen, validated Flash concepts for both search spaces |
+| `artifacts/starts/` | Initial populations and seeds for each configuration |
+| `ssme_nas/transfer.py`, `artifacts/transfer/` | Deterministic cross-space field adapters and instantiated source bundles |
+| `prompts/` | Actual concept-generation request JSON and response schemas |
+| `tests/` | Offline unit, evaluator and archived-parity regression checks |
 
-The two request files contain the actual system message, user message and
-generation settings used for offline concept construction:
-
-- [NAS-Bench-101 request](prompts/nb101_flash_request.json)
-- [NAS-Bench-201 request](prompts/nb201_flash_request.json)
-
-Each user message supplies the native grammar, 22 structural-field definitions
-and 16 unlabelled edit examples. Each request uses `deepseek-flash`,
-`temperature=0`, `max_tokens=4096`, disabled thinking and JSON output.
-The NAS-Bench-201 request is shared across its three datasets.
-
-The expected output is a `concepts` array; each concept contains a `features`
-array of existing field names and a short structural `meaning`.
-See [concept generation and validation](prompts/README.md) for the request,
-response checks and saved JSON format, and the
-[configuration and integration guide](docs/RELEASE_STATUS.md) for the controller
-interfaces.
-The request files contain no credentials and are not executed by the test suite.
+Outputs include `run.json`, copied inputs, per-pool records,
+`WINNERS.json`, `WINNER_SEAL.json` and `RESULTS.json`.
+See the [execution guide](docs/RELEASE_STATUS.md) for their formats and the
+[prompt guide](prompts/README.md) for concept generation.
+The [cross-space adapter guide](docs/TRANSFER.md) specifies field projections
+and the exact bundles used for exploratory concept reuse.
 
 ## License
 
-See [NOTICE.md](NOTICE.md).
+Source availability does not change the repository's licensing terms.
+See [NOTICE.md](NOTICE.md) for project rights and third-party attribution.

@@ -1,0 +1,112 @@
+{
+  "format": "seme-nas-concepts-v1",
+  "space": "nb201",
+  "concepts": [
+    {
+      "id": "C00",
+      "features": [
+        "child_connected",
+        "parent_connected",
+        "path_delta"
+      ],
+      "meaning": "Connectivity transition of the edited cell: whether parent and child retain an input-output path and the sign of change in effective path count."
+    },
+    {
+      "id": "C01",
+      "features": [
+        "child_paths",
+        "parent_paths",
+        "touched_live_before"
+      ],
+      "meaning": "Background path multiplicity versus how many edited slots already lie on effective parent paths, distinguishing sparse from dense live contexts."
+    },
+    {
+      "id": "C02",
+      "features": [
+        "touched_all_paths",
+        "touched_live_after",
+        "untouched_path_exists"
+      ],
+      "meaning": "Post-edit coverage of edited slots across effective child paths, including whether any path avoids all edits."
+    },
+    {
+      "id": "C03",
+      "features": [
+        "child_live_conv",
+        "live_conv_delta",
+        "parent_live_conv"
+      ],
+      "meaning": "Presence of convolution on effective paths before and after the edit and the sign of change in effective convolution edges."
+    },
+    {
+      "id": "C04",
+      "features": [
+        "live_skip_delta",
+        "unmodified_live_conv",
+        "unmodified_live_pool"
+      ],
+      "meaning": "Change in effective skip edges alongside untouched convolution or pooling context remaining on parent paths."
+    },
+    {
+      "id": "C05",
+      "features": [
+        "same_path_after",
+        "same_path_before",
+        "serial_slots"
+      ],
+      "meaning": "Whether two edited slots co-occur on a shared parent or child path and whether one edited edge feeds another."
+    },
+    {
+      "id": "C06",
+      "features": [
+        "share_head",
+        "share_tail"
+      ],
+      "meaning": "Topological relation of two edited edges by common source node or common destination node."
+    },
+    {
+      "id": "C07",
+      "features": [
+        "parent_branch",
+        "parent_merge"
+      ],
+      "meaning": "Branching and merging structure of the effective parent path graph as background for the edit."
+    },
+    {
+      "id": "C08",
+      "features": [
+        "parent_branch",
+        "parent_merge",
+        "parent_paths"
+      ],
+      "meaning": "Parent path count combined with branch and merge topology, characterizing the pre-edit routing skeleton."
+    },
+    {
+      "id": "C09",
+      "features": [
+        "child_paths",
+        "path_delta",
+        "touched_live_after"
+      ],
+      "meaning": "Child path count, path-count sign change, and edited-slot coverage on child paths as post-edit consequences."
+    },
+    {
+      "id": "C10",
+      "features": [
+        "same_path_after",
+        "touched_live_after",
+        "touched_live_before"
+      ],
+      "meaning": "Shift in edited-slot liveness from parent to child and whether edits converge on a shared child path."
+    },
+    {
+      "id": "C11",
+      "features": [
+        "live_conv_delta",
+        "parent_live_conv",
+        "unmodified_live_conv"
+      ],
+      "meaning": "Convolution context on parent paths versus unmodified convolution and the sign of convolution-edge change after editing."
+    }
+  ]
+}

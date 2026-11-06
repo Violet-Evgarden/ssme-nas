@@ -1,5 +1,7 @@
 {
-  "release_status": "preview_core_withheld",
+  "release_status": "full_source_release",
+  "concepts_file": "../artifacts/concepts/nb101_flash.json",
+  "starts_file": "../artifacts/starts/nb101.json",
   "example": "NAS-Bench-101 / CIFAR-10 main experiment",
   "space": "nb101",
   "dataset": "cifar10",

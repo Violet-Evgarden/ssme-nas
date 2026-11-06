@@ -1,4 +1,4 @@
-# No private inputs or runtime artifacts belong in the preview.
+# Keep credentials, benchmark tables and generated run outputs outside version control.
 .env
 .env.*
 !.env.example
@@ -19,6 +19,8 @@
 *.gguf
 *.zip
 *.tar*
+*.pbz2
+*.pickle
 __pycache__/
 *.py[cod]
 .pytest_cache/

@@ -1,0 +1,110 @@
+{
+  "format": "seme-nas-concepts-v1",
+  "space": "nb101",
+  "concepts": [
+    {
+      "id": "C00",
+      "features": [
+        "edge_delta",
+        "edit_kind",
+        "node_delta"
+      ],
+      "meaning": "Separates pure routing-link edits from node-operation edits and mixed edits, and records whether the effective connection count and internal node count move together or independently."
+    },
+    {
+      "id": "C01",
+      "features": [
+        "child_depth",
+        "depth_delta",
+        "parent_depth"
+      ],
+      "meaning": "Contrasts the longest internal-node path before and after the edit, distinguishing edits that change the deepest route from those that leave depth unchanged."
+    },
+    {
+      "id": "C02",
+      "features": [
+        "path_delta",
+        "shortest_depth_delta"
+      ],
+      "meaning": "Relates change in the minimum internal-node route to change in total effective path multiplicity, separating shortcut-like depth shifts from path-count changes."
+    },
+    {
+      "id": "C03",
+      "features": [
+        "parent_branches",
+        "parent_merges"
+      ],
+      "meaning": "Background fan-out and fan-in structure of the parent, indicating whether edited slots sit in a branching or merging region of the effective graph."
+    },
+    {
+      "id": "C04",
+      "features": [
+        "same_path_after",
+        "same_path_before",
+        "touched_path_coverage"
+      ],
+      "meaning": "Locates edited slots relative to parent and child paths: whether all, some, or no paths are touched, and whether two edited slots share a path before or after."
+    },
+    {
+      "id": "C05",
+      "features": [
+        "parent_conv1",
+        "parent_conv3",
+        "parent_pool"
+      ],
+      "meaning": "Operation context of the parent graph by operation type, distinguishing edits made in conv3x3-rich, conv1x1-rich, or pooling-rich backgrounds."
+    },
+    {
+      "id": "C06",
+      "features": [
+        "remaining_conv1",
+        "remaining_conv3",
+        "remaining_pool"
+      ],
+      "meaning": "Untouched operation context retained in both graphs, separating edits that preserve most of the operation mixture from those that alter it."
+    },
+    {
+      "id": "C07",
+      "features": [
+        "child_nodes",
+        "node_delta",
+        "parent_nodes"
+      ],
+      "meaning": "Effective internal node count before and after, distinguishing node-preserving edits from node-removing or node-adding structural changes."
+    },
+    {
+      "id": "C08",
+      "features": [
+        "parent_paths",
+        "path_delta"
+      ],
+      "meaning": "Parent effective path multiplicity together with its change, separating edits that add, remove, or preserve input-output routes."
+    },
+    {
+      "id": "C09",
+      "features": [
+        "edge_delta",
+        "shortest_depth_delta"
+      ],
+      "meaning": "Joint routing change: whether effective connection count and minimum internal-node route length move in the same or opposite directions."
+    },
+    {
+      "id": "C10",
+      "features": [
+        "edit_kind",
+        "same_path_after",
+        "same_path_before"
+      ],
+      "meaning": "For two-slot edits, whether the slots co-occur on a parent path, a child path, or neither, and whether the edit is link-only, node-only, or mixed."
+    },
+    {
+      "id": "C11",
+      "features": [
+        "parent_branches",
+        "parent_depth",
+        "parent_merges"
+      ],
+      "meaning": "Parent topology profile combining deepest internal route with branching and merging vertices, giving structural context for where an edit lands."
+    }
+  ]
+}

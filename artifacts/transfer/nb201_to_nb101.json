@@ -1,0 +1,77 @@
+{
+  "source_space": "nb201",
+  "target_space": "nb101",
+  "numerical_catalog": "UNCHANGED_TARGET_NATIVE",
+  "accepted": [
+    {
+      "id": "C00",
+      "features": [
+        "transfer__child_connected",
+        "transfer__parent_connected",
+        "transfer__path_delta"
+      ],
+      "meaning": "Connectivity transition type: whether the edit repairs a disconnected parent into a connected child, breaks a connected parent into a disconnected child, or preserves connectivity; identical replacements differ because they act on different reachability regimes."
+    },
+    {
+      "id": "C01",
+      "features": [
+        "transfer__child_paths",
+        "transfer__parent_paths",
+        "transfer__path_delta"
+      ],
+      "meaning": "Path-count regime change: edits that collapse multiple effective paths to fewer versus edits that keep a single-path graph stable versus edits that create the first path; the same slot replacement has different structural consequence depending on multiplicity."
+    },
+    {
+      "id": "C02",
+      "features": [
+        "transfer__touched_all_paths",
+        "transfer__untouched_path_exists"
+      ],
+      "meaning": "Whether the edited slots lie on every effective parent path or leave an alternative untouched path; identical edits are buffered when an untouched path exists and are decisive when all paths are touched."
+    },
+    {
+      "id": "C03",
+      "features": [
+        "transfer__same_path_after",
+        "transfer__same_path_before",
+        "transfer__serial_slots"
+      ],
+      "meaning": "Edited slots are co-located on a shared parent path, a shared child path, or in series; identical replacements interact differently when edits are coupled along one path versus independent."
+    },
+    {
+      "id": "C04",
+      "features": [
+        "transfer__live_conv_delta",
+        "transfer__live_skip_delta",
+        "transfer__unmodified_live_conv"
+      ],
+      "meaning": "Change in the mix of effective convolution and skip edges, conditioned on whether an unmodified convolution survives; identical replacements shift the live operator composition differently depending on remaining unmodified structure."
+    },
+    {
+      "id": "C05",
+      "features": [
+        "transfer__child_live_conv",
+        "transfer__parent_live_conv",
+        "transfer__unmodified_live_pool"
+      ],
+      "meaning": "Whether convolution is present before and after on effective paths while an unmodified pooling edge remains; identical edits differ when they remove the last live convolution versus when pooling already dominates."
+    },
+    {
+      "id": "C06",
+      "features": [
+        "transfer__parent_branch",
+        "transfer__parent_merge",
+        "transfer__parent_paths"
+      ],
+      "meaning": "Branching/merging topology of the parent effective graph; identical replacements propagate differently through branched and merged path structures than through linear single-path graphs."
+    },
+    {
+      "id": "C07",
+      "features": [
+        "transfer__share_head",
+        "transfer__share_tail"
+      ],
+      "meaning": "Edited edges share a source or destination node; identical replacements have different downstream reachability effects when edits converge on a common head or diverge from a common tail."
+    }
+  ]
+}

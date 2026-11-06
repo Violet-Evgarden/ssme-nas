@@ -1,0 +1,52 @@
+{
+  "source_space": "nb101",
+  "target_space": "nb201",
+  "numerical_catalog": "UNCHANGED_TARGET_NATIVE",
+  "accepted": [
+    {
+      "id": "C00",
+      "features": [
+        "transfer__edge_delta",
+        "transfer__edit_kind",
+        "transfer__node_delta"
+      ],
+      "meaning": "Separates pure routing-link edits (edge_delta nonzero, node_delta zero) from pure operation swaps (edge_delta zero, node_delta zero) and mixed edits, giving a first partition between connection-presence changes and operation-on-node changes."
+    },
+    {
+      "id": "C01",
+      "features": [
+        "transfer__depth_delta",
+        "transfer__parent_depth",
+        "transfer__shortest_depth_delta"
+      ],
+      "meaning": "Distinguishes edits that alter the longest internal-node path from those that alter the shortest path, and from depth-neutral edits, capturing where in the depth profile the structural change lands."
+    },
+    {
+      "id": "C02",
+      "features": [
+        "transfer__parent_paths",
+        "transfer__path_delta",
+        "transfer__touched_path_coverage"
+      ],
+      "meaning": "Contrasts edits that change the number of input-output paths with edits that leave path multiplicity fixed, conditioned on whether edited slots sit on none, some, or all parent paths."
+    },
+    {
+      "id": "C03",
+      "features": [
+        "transfer__edge_delta",
+        "transfer__parent_branches",
+        "transfer__parent_merges"
+      ],
+      "meaning": "Contextualizes routing edits by the parent's fan-out and fan-in structure, separating edits in branch-heavy versus merge-heavy regions from operation-only edits."
+    },
+    {
+      "id": "C05",
+      "features": [
+        "transfer__edit_kind",
+        "transfer__same_path_after",
+        "transfer__same_path_before"
+      ],
+      "meaning": "For two-slot edits, distinguishes whether the edited slots shared a path before the edit, after the edit, both, or neither, separating co-located from dispersed edit pairs."
+    }
+  ]
+}
