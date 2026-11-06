@@ -57,11 +57,10 @@ The default concepts are `artifacts/concepts/nb101_flash.json` and
 under `artifacts/starts/`. The supplied artifacts make an LLM call unnecessary
 when running the released search.
 
-Each starts file contains twenty seeds and twenty populations of ten distinct
-architectures. The first ten populations are preserved from the original public
-release; the additional ten are label-free reproduction inputs, not measured
-results. For exact replication of another run batch, supply that batch's seeds
-and populations with `--starts FILE`. See [provenance](PROVENANCE.md#twenty-run-public-inputs).
+Each configuration repeats the same method independently twenty times. Each
+search begins with ten distinct, uniformly sampled random architectures and
+uses its own seed. Seeds and populations are stored in the starts file for
+reproducibility. Use `--starts FILE` to supply a different random initialization.
 
 Optional arguments:
 

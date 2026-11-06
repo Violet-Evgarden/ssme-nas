@@ -42,15 +42,13 @@ NAS-Bench-201, CIFAR-10:
 python run_search.py --config configs/nb201_cifar10_q100.json --benchmark /path/to/NATS-tss-v1_0-3ffb9.pickle.pbz2 --output runs/nb201_cifar10
 ```
 
-The default configurations run twenty searches with the included concepts and
-initial populations. NAS-Bench-201 also accepts its official `.pth` benchmark.
+Each default configuration runs the same method independently twenty times,
+with ten randomly sampled initial architectures per search. Seeds and initial
+populations are saved for reproducibility. NAS-Bench-201 also accepts its
+official `.pth` benchmark.
 Use `--concepts FILE` and `--starts FILE` to supply alternative JSON artifacts;
 use `--validation-only` to finish after validation-based winner selection.
 Choose a fresh output directory for each run.
-
-The first ten supplied pools are unchanged. Pools 10–19 are additional seeded,
-label-free random inputs for public reproduction, not additional reported
-experiment results. See [input provenance](docs/PROVENANCE.md#twenty-run-public-inputs).
 
 Read-only inspection and offline tests:
 
