@@ -1,0 +1,65 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "SEME-NAS NB201 concept response format",
+  "description": "Documentation schema for the archived prompt's response format; not an extra field sent to the LLM provider.",
+  "type": "object",
+  "required": [
+    "concepts"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "concepts": {
+      "type": "array",
+      "minItems": 12,
+      "maxItems": 12,
+      "items": {
+        "type": "object",
+        "required": [
+          "features",
+          "meaning"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "features": {
+            "type": "array",
+            "minItems": 1,
+            "maxItems": 3,
+            "uniqueItems": true,
+            "items": {
+              "type": "string",
+              "enum": [
+                "parent_connected",
+                "child_connected",
+                "path_delta",
+                "parent_paths",
+                "child_paths",
+                "parent_live_conv",
+                "child_live_conv",
+                "touched_live_before",
+                "touched_live_after",
+                "touched_all_paths",
+                "untouched_path_exists",
+                "same_path_before",
+                "same_path_after",
+                "share_tail",
+                "share_head",
+                "serial_slots",
+                "live_conv_delta",
+                "live_skip_delta",
+                "unmodified_live_conv",
+                "unmodified_live_pool",
+                "parent_branch",
+                "parent_merge"
+              ]
+            }
+          },
+          "meaning": {
+            "type": "string",
+            "minLength": 1
+          }
+        }
+      }
+    }
+  },
+  "$comment": "Also require the union of all concept features to equal the feature catalog, and reject duplicate feature sets regardless of feature order. These cross-item constraints are checked by the concept validator."
+}

@@ -6,7 +6,8 @@ scientific conditions, or misleading dependency errors.
 
 ## Missing modules
 
-1. Frozen concept artifacts, prompt packaging, and LLM inference clients.
+1. Frozen concept artifacts and LLM inference clients. The actual NB101/NB201
+   request JSON files are available in `prompts/`.
 2. Native graph normalization, canonical identity, legal-action enumeration,
    and structural context extraction.
 3. Pool-local observed-neighbor completion and rank-feedback construction.
