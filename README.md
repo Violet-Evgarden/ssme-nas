@@ -42,11 +42,15 @@ NAS-Bench-201, CIFAR-10:
 python run_search.py --config configs/nb201_cifar10_q100.json --benchmark /path/to/NATS-tss-v1_0-3ffb9.pickle.pbz2 --output runs/nb201_cifar10
 ```
 
-The default configurations run ten searches with the included concepts and
+The default configurations run twenty searches with the included concepts and
 initial populations. NAS-Bench-201 also accepts its official `.pth` benchmark.
 Use `--concepts FILE` and `--starts FILE` to supply alternative JSON artifacts;
 use `--validation-only` to finish after validation-based winner selection.
 Choose a fresh output directory for each run.
+
+The first ten supplied pools are unchanged. Pools 10–19 are additional seeded,
+label-free random inputs for public reproduction, not additional reported
+experiment results. See [input provenance](docs/PROVENANCE.md#twenty-run-public-inputs).
 
 Read-only inspection and offline tests:
 
@@ -57,12 +61,12 @@ python -m unittest discover -s tests -v
 
 ## Configurations
 
-| Configuration | Dataset | Queries per run | Initial population |
-|---|---|---:|---:|
-| `nb101_cifar10_q200.json` | CIFAR-10 | 200 | 10 |
-| `nb201_cifar10_q100.json` | CIFAR-10 | 100 | 10 |
-| `nb201_cifar100_q100.json` | CIFAR-100 | 100 | 10 |
-| `nb201_imagenet16_120_q100.json` | ImageNet16-120 | 100 | 10 |
+| Configuration | Dataset | Queries per run | Initial population | Search runs |
+|---|---|---:|---:|---:|
+| `nb101_cifar10_q200.json` | CIFAR-10 | 200 | 10 | 20 |
+| `nb201_cifar10_q100.json` | CIFAR-10 | 100 | 10 | 20 |
+| `nb201_cifar100_q100.json` | CIFAR-100 | 100 | 10 | 20 |
+| `nb201_imagenet16_120_q100.json` | ImageNet16-120 | 100 | 10 | 20 |
 
 Initial-population evaluations count toward the query budget. Search uses
 validation measurements; test measurements are read only after all

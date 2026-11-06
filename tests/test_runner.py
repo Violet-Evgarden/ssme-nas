@@ -202,7 +202,7 @@ class RunnerTest(unittest.TestCase):
             original = read_json(config_path)
             changes = [("queries_per_run", 9), ("queries_per_run", True),
                        ("queries_per_run", 25.0), ("search_runs", 0),
-                       ("search_runs", 11), ("initial_population", 10.0),
+                       ("search_runs", 21), ("initial_population", 10.0),
                        ("initial_population", 11), ("online_llm", True),
                        ("imported_performance_labels", 1), ("validation", []),
                        ("test", {"winner_only_after_all_winners_sealed": False})]

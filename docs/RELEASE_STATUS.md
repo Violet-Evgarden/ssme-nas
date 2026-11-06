@@ -47,7 +47,7 @@ python run_search.py --config configs/nb101_cifar10_q200.json --benchmark /path/
 python run_search.py --config configs/nb201_cifar10_q100.json --benchmark /path/to/NATS-tss-v1_0-3ffb9.pickle.pbz2 --output runs/nb201_cifar10
 ```
 
-The JSON configurations specify the space, dataset, query budget, ten search
+The JSON configurations specify the space, dataset, query budget, twenty search
 runs, and benchmark measurement aggregation. The initial ten architectures
 are included in each run's query budget. The CIFAR-100 and ImageNet16-120
 configurations use the same topology benchmark with their respective datasets.
@@ -56,6 +56,12 @@ The default concepts are `artifacts/concepts/nb101_flash.json` and
 `artifacts/concepts/nb201_flash.json`. Initial populations and seeds are stored
 under `artifacts/starts/`. The supplied artifacts make an LLM call unnecessary
 when running the released search.
+
+Each starts file contains twenty seeds and twenty populations of ten distinct
+architectures. The first ten populations are preserved from the original public
+release; the additional ten are label-free reproduction inputs, not measured
+results. For exact replication of another run batch, supply that batch's seeds
+and populations with `--starts FILE`. See [provenance](PROVENANCE.md#twenty-run-public-inputs).
 
 Optional arguments:
 

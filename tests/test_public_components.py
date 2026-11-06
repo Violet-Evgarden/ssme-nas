@@ -122,7 +122,9 @@ class PublicComponentsTest(unittest.TestCase):
             loaded, concepts, starts, space = load_inputs(path)
             self.assertEqual(loaded, config)
             self.assertEqual(len(concepts), 12)
-            self.assertEqual(len(starts["seeds"]), 10)
+            self.assertEqual(config["search_runs"], 20)
+            self.assertEqual(len(starts["seeds"]), 20)
+            self.assertEqual(set(starts["pools"]), {str(i) for i in range(20)})
             self.assertEqual(space.name, config["space"])
 
 

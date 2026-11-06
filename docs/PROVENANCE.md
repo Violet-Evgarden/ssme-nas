@@ -5,6 +5,38 @@ NAS-Bench-201 Q100 main-experiment sources. It includes the structural edit
 memory, native mutations, evolutionary controller, frozen Flash concepts and
 initial populations used by the four supplied configurations.
 
+## Twenty-run public inputs
+
+On 2026-11-06, the four defaults were extended from ten to twenty search runs.
+Pools 0–9 and their seeds were preserved exactly from commit `aa26fae`.
+Pools 10–19 were generated once without reading any validation or test scores;
+they are public reproduction inputs, not a reconstruction of runs performed
+on another computer or evidence of twenty measured results. No benchmark
+search or new LLM call was performed for this configuration update.
+
+The generation namespace is `seme-nas-public-starts-extension-20261106-v1`.
+For each artifact stem and pool index, its seed is
+`int(digest([namespace, artifact_stem, pool])[:16], 16) & ((1 << 63) - 1)`,
+using `ssme_nas._utils.digest`. New seeds are distinct from all retained seeds
+and from one another. With `random.Random(seed).sample(domain, 10)`, each pool
+samples ten distinct architectures uniformly without replacement; overlap
+between pools is allowed. No outcome-driven redrawing or structural filtering
+is used.
+
+- NAS-Bench-101 samples from all 423,624 official identities sorted by hash.
+  Only structural metadata is read. The existing `core.nb101.padded` lift uses
+  `int(digest([seed, 'inactive-node-labels', architecture_hash])[:16], 16)`
+  as its separate random seed. The resulting official identity is checked.
+- NAS-Bench-201 samples from `itertools.product(core.nb201.OPS, repeat=6)`,
+  containing all 15,625 structures in the original operation order.
+
+The [extension manifest](../artifacts/starts/EXTENSION_20_RUNS.json) records
+the new seeds and identities, domain fingerprint and preserved-input hashes.
+All twenty pools' identity draws were replayed against the original sampling
+rules. The frozen concepts, scoring, controller, repeat aggregation and
+per-run query budgets are unchanged; the initial population remains ten.
+Changing the run count does not change any historical result table.
+
 ## Modules and portability
 
 | Module | Source and role |

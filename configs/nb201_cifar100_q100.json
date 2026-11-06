@@ -7,7 +7,7 @@
   "dataset": "cifar100",
   "queries_per_run": 100,
   "initial_population": 10,
-  "search_runs": 10,
+  "search_runs": 20,
   "online_llm": false,
   "imported_performance_labels": 0,
   "validation": {"dataset": "cifar100", "hp": 200, "epoch_index": 199, "metric": "x-valid", "repeat_aggregation": "all_available_mean"},
