@@ -13,7 +13,7 @@ from collections import Counter, defaultdict
 from itertools import combinations
 
 EPS = 1e-7
-# Preserve the exact archived numerical setting (reported rounded in the paper).
+# Experimental bandwidth; the exact value is documented in the repository README.
 H = 0.34090909090909094
 
 

@@ -70,6 +70,33 @@ Initial-population evaluations count toward the query budget. Search uses
 validation measurements; test measurements are read only after all
 validation-selected winners have been sealed.
 
+A query reveals the recorded validation performance of one distinct architecture.
+NAS-Bench-101 uses the 108-epoch records; NAS-Bench-201 uses the 200-epoch
+records in the NATS-Bench topology release
+`NATS-tss-v1_0-3ffb9.pickle.pbz2`. Thus a NAS-Bench-201 run evaluates at most
+100 distinct architectures, including its ten initial architectures, and selects
+its final architecture from their validation feedback. The supplied evaluators
+read official training records rather than retraining networks during search.
+
+### Contextual bandwidth
+
+The contextual evidence kernel is `exp(-distance / H)`. The implementation uses
+`H = 0.34090909090909094`, defined in
+[`ssme_nas/core/memory.py`](ssme_nas/core/memory.py).
+`H` is a positive bandwidth hyperparameter set before search: smaller values
+concentrate weight on nearby edit relations, while larger values retain more
+distant evidence. The supplied experiments use this same value throughout;
+it is not updated by the LLM or by search feedback.
+
+### Released prompts
+
+The complete concept-refinement requests are available as
+[`prompts/nb101_flash_request.json`](prompts/nb101_flash_request.json) and
+[`prompts/nb201_flash_request.json`](prompts/nb201_flash_request.json).
+They include the system and user prompts, structural definitions, unlabeled
+examples, model identifier and generation settings. Response schemas and usage
+instructions are in the [prompt guide](prompts/README.md).
+
 ## Programs and files
 
 | Path | Purpose |
