@@ -22,7 +22,7 @@ class SearchSpace(Protocol):
 class ValidationEvaluator(Protocol):
     # Deliberately no Test access in the search-loop interface.
     def validation(self, genotype: Genotype, intent: Mapping[str, Any]) -> Record:
-        """Return value plus actual repeat records for this architecture only."""
+        """Return one seeded validation repeat; intent includes the run search_seed."""
         ...
 
 

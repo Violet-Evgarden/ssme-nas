@@ -48,7 +48,10 @@ python run_search.py --config configs/nb201_cifar10_q100.json --benchmark /path/
 ```
 
 The JSON configurations specify the space, dataset, query budget, twenty search
-runs, and benchmark measurement aggregation. The initial ten architectures
+runs, and benchmark measurement policies. Validation selects one of the three
+official training repeats uniformly, using an independent seed derived from the
+search seed and architecture identity. This single observation is cached within
+the run and its repeat ID is recorded. The initial ten architectures
 are included in each run's query budget. The CIFAR-100 and ImageNet16-120
 configurations use the same topology benchmark with their respective datasets.
 
@@ -112,6 +115,11 @@ relations, rank information and relation provenance. `proposal` contains
 The complete search loop is
 [`search_pool`](../ssme_nas/controller.py). Its evaluator supplies validation
 measurements, and its audit sink persists the query and decision sequence.
+Direct evaluator calls must include `search_seed`, `pool`, `query_index`, and
+`architecture_id` in the validation intent. Benchmark files must contain all
+three validation repeats for every queried architecture. The final winner's
+test accuracy retains its all-available-repeat mean; test values do not enter
+the search.
 
 ## Tests
 

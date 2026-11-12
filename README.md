@@ -71,6 +71,14 @@ validation measurements; test measurements are read only after all
 validation-selected winners have been sealed.
 
 A query reveals the recorded validation performance of one distinct architecture.
+For each architecture, one of its three official training repeats is sampled
+uniformly, and only that repeat's validation accuracy is used. Each architecture
+counts once, including initialization; revisiting a recorded query does not draw
+another repeat. This query unit is the same for both benchmark spaces.
+Validation sampling is reproducible from the run seed and architecture identity,
+independent of the mutation random stream. The selected repeat ID and value are
+saved with each query. Final winner test reporting retains the mean of the
+available official test repeats after validation-only selection.
 NAS-Bench-101 uses the 108-epoch records; NAS-Bench-201 uses the 200-epoch
 records in the NATS-Bench topology release
 `NATS-tss-v1_0-3ffb9.pickle.pbz2`. Thus a NAS-Bench-201 run evaluates at most

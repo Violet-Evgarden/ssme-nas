@@ -37,10 +37,15 @@ class SyntheticBackend:
     def __init__(self):
         self.closed = False
 
-    def read(self, identity, stage, protocol):
+    def repeat_ids(self, identity, stage, protocol):
+        return [0, 1, 2]
+
+    def read(self, identity, stage, protocol, selected=None):
         value = 20 + int(digest([identity, stage])[:8], 16) % 6000 / 100
-        return [{"repeat_id": 0, "value": value - 0.1},
-                {"repeat_id": 1, "value": value + 0.1}]
+        return [row for row in [{"repeat_id": 0, "value": value - 0.1},
+                               {"repeat_id": 1, "value": value + 0.1},
+                               {"repeat_id": 2, "value": value}]
+                if selected is None or row["repeat_id"] == selected]
 
     def close(self):
         self.closed = True
@@ -114,6 +119,11 @@ class RunnerTest(unittest.TestCase):
                     self.assertEqual(sum(e["kind"] == "QUERY_INTENT" for e in events), budget)
                     self.assertEqual(sum(e["kind"] == "VALIDATION_RESULT" for e in events), budget)
                     self.assertFalse(any("test" in q["validation"] for q in records))
+                    for record in records:
+                        self.assertEqual(record["validation"]["repeat_count"], 1)
+                        self.assertEqual(record["search_seed"], record["validation"]["search_seed"])
+                        self.assertEqual(record["validation"]["value"],
+                                         record["validation"]["repeats"][0]["value"])
                     if budget > 20:
                         self.assertEqual(records[20]["proposal"]["parent_selection"]["reason"],
                                          "VALIDATION_TWO_WAY_TOURNAMENT")

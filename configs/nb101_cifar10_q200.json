@@ -10,6 +10,6 @@
   "search_runs": 20,
   "online_llm": false,
   "imported_performance_labels": 0,
-  "validation": {"budget": 108, "metric": "final_validation_accuracy", "repeat_aggregation": "all_available_mean"},
+  "validation": {"budget": 108, "metric": "final_validation_accuracy", "repeat_aggregation": "random_one_of_three"},
   "test": {"budget": 108, "metric": "final_test_accuracy", "repeat_aggregation": "all_available_mean", "winner_only_after_all_winners_sealed": true}
 }

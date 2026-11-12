@@ -21,7 +21,7 @@ use accuracy measurements or structural filtering.
 - NAS-Bench-201 samples from `itertools.product(core.nb201.OPS, repeat=6)`,
   containing all 15,625 structures in the original operation order.
 
-The frozen concepts, scoring, controller and repeat aggregation are shared
+The frozen concepts, scoring, controller and validation-repeat policy are shared
 across the twenty searches. Per-search query budgets are 200 for NAS-Bench-101
 and 100 for NAS-Bench-201, including the ten initial architectures.
 

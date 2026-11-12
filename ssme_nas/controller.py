@@ -22,7 +22,7 @@ def search_pool(starts, seed, concepts, query_budget, pool,
         if identity in visited or len(archive) >= query_budget:
             raise ValueError("Revisited identity or exhausted query budget.")
         intent = dict(
-            pool=pool, query_index=len(archive), architecture_id=identity,
+            pool=pool, search_seed=seed, query_index=len(archive), architecture_id=identity,
             ops=list(ops), slot=slot, parent=parent, proposal=proposal,
             memory_version_before=memory_version,
             origin="RANDOM_START" if parent is None else "EVOLVED_CHILD",

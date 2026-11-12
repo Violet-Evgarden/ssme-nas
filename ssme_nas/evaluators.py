@@ -1,4 +1,4 @@
-"""Stage-restricted, all-repeat benchmark evaluation in percentage points.
+"""Stage-restricted benchmark evaluation with one sampled validation repeat.
 
 Supported inputs are the official NAS-Bench-101 TFRecord, NAS-Bench-201 .pth,
 NATS-Bench topology .pickle.pbz2, and an exported JSON table. Benchmark packages
@@ -21,9 +21,12 @@ from copy import deepcopy
 import json
 import math
 from pathlib import Path
+import random
 import re
 import statistics
 import struct
+
+from ._utils import digest
 
 try:
     from google_crc32c import value as _accelerated_crc32c
@@ -58,7 +61,8 @@ def _protocol(config):
     else:
         raise ValueError(f"Unsupported benchmark/dataset: {name}/{dataset}")
     for stage, fields in expected.items():
-        fields["repeat_aggregation"] = "all_available_mean"
+        fields["repeat_aggregation"] = ("random_one_of_three" if stage == "validation"
+                                        else "all_available_mean")
         for key, value in fields.items():
             if config.get(stage, {}).get(key) != value:
                 raise ValueError(f"Unsupported {stage}.{key}; expected {value!r}.")
@@ -94,6 +98,7 @@ class BenchmarkEvaluator:
         if self._runs < 1 or self._budget < 1:
             raise ValueError("Run count and query budget must be positive.")
         self._queries = {pool: {} for pool in range(self._runs)}
+        self._search_seeds = {}
         self._cache = {}
         self._winners = None
         self._closed = False
@@ -109,11 +114,25 @@ class BenchmarkEvaluator:
             raise ValueError("Pool lies outside the configured runs.")
         return identity, pool
 
-    def _measurement(self, identity, stage):
-        cache_key = stage, identity
+    def _measurement(self, identity, stage, pool=None, seed=None):
+        # Validation draws belong to a run, not the globally shared architecture.
+        cache_key = (stage, pool, identity) if stage == "validation" else (stage, identity)
         if cache_key not in self._cache:
             try:
-                rows = _repeats(self._backend.read(identity, stage, self.protocol[stage]))
+                selected = None
+                if stage == "validation":
+                    available = sorted(_integer(value, "repeat_id") for value in
+                                       self._backend.repeat_ids(identity, stage, self.protocol[stage]))
+                    if len(available) != 3 or len(set(available)) != 3:
+                        raise BenchmarkDataError("Validation requires exactly three distinct official repeats.")
+                    # Separate namespace: mutation RNG and query ordering cannot
+                    # consume or change the validation draw for this architecture.
+                    draw_seed = digest(["validation-repeat-v1", self.config["space"],
+                                        self.config["dataset"], seed, identity])
+                    selected = random.Random(draw_seed).choice(available)
+                rows = _repeats(self._backend.read(identity, stage, self.protocol[stage], selected))
+                if selected is not None and [row["repeat_id"] for row in rows] != [selected]:
+                    raise BenchmarkDataError("Backend must return only the selected validation repeat.")
             except (KeyError, IndexError, TypeError) as exc:
                 raise BenchmarkDataError(f"Missing {stage} repeats for {identity}.") from exc
             self._cache[cache_key] = {
@@ -122,22 +141,33 @@ class BenchmarkEvaluator:
                         **({"budget": 108, "metric": self.protocol[stage]["metric"]}
                            if self.config["space"] == "nb101" else
                            {"hp": 200, "epoch_index": 199, "split": self.protocol[stage]["metric"]}),
-                        "aggregation": "all_actual_official_repeats_mean"},
+                        "aggregation": ("random_one_of_three" if stage == "validation"
+                                        else "all_actual_official_repeats_mean")},
                 "architecture_id": identity,
                 "stage": stage,
-                "value": statistics.mean(row["value"] for row in rows),
+                "value": (rows[0]["value"] if stage == "validation"
+                          else statistics.mean(row["value"] for row in rows)),
                 "repeats": rows,
                 "read_repeats": rows,
                 "repeat_ids": [row["repeat_id"] for row in rows],
                 "repeat_count": len(rows),
                 "protocol": deepcopy(self.protocol[stage]),
             }
+            if stage == "validation":
+                self._cache[cache_key].update(selected_repeat_id=selected,
+                                              available_repeat_ids=available,
+                                              search_seed=seed)
         return deepcopy(self._cache[cache_key])
 
     def validation(self, ops, intent):
         identity, pool = self._identity(ops, intent)
         if self._winners is not None:
             raise RuntimeError("Validation is closed after the winner seal.")
+        seed = _integer(intent.get("search_seed"), "search_seed")
+        if seed < 0:
+            raise ValueError("search_seed must be nonnegative.")
+        if pool in self._search_seeds and self._search_seeds[pool] != seed:
+            raise ValueError("The search seed is immutable within a run.")
         index = _integer(intent.get("query_index"), "query_index")
         queries = self._queries[pool]
         if not 0 <= index < self._budget:
@@ -147,7 +177,8 @@ class BenchmarkEvaluator:
                 raise ValueError("A recorded query intent cannot be changed.")
         elif index != len(queries) or identity in queries.values():
             raise ValueError("Queries must be sequential and distinct within each run.")
-        measurement = self._measurement(identity, "validation")
+        measurement = self._measurement(identity, "validation", pool, seed)
+        self._search_seeds[pool] = seed
         queries[index] = identity
         return measurement
 
@@ -167,7 +198,7 @@ class BenchmarkEvaluator:
             if len(queried) != self._budget:
                 raise ValueError("All runs must finish their validation budgets before Test.")
             best = min(queried.values(), key=lambda identity: (
-                -self._cache["validation", identity]["value"], identity))
+                -self._cache["validation", pool, identity]["value"], identity))
             if winner.get("architecture_id") != best:
                 raise ValueError("Winner is not the validation argmax with canonical tie-breaking.")
             selected[pool] = best
@@ -220,8 +251,12 @@ class _JsonTable:
         return {"architecture_id": identity, **{
             key: entry[key] for key in ("ops", "matrix") if key in entry}}
 
-    def read(self, identity, stage, protocol):
-        return self._entries[identity][stage]
+    def repeat_ids(self, identity, stage, protocol):
+        return [row["repeat_id"] for row in self._entries[identity][stage]]
+
+    def read(self, identity, stage, protocol, selected=None):
+        return [row for row in self._entries[identity][stage]
+                if selected is None or row["repeat_id"] == selected]
 
     def close(self):
         pass
@@ -386,9 +421,14 @@ class _NasBench101TFRecord:
         return {"architecture_id": identity, "ops": nodes,
                 "matrix": [[int(value) for value in row[2][i*n:(i+1)*n]] for i in range(n)]}
 
-    def read(self, identity, stage, protocol):
+    def repeat_ids(self, identity, stage, protocol):
+        return range(len(self._offsets[identity]))
+
+    def read(self, identity, stage, protocol, selected=None):
         result = []
         for repeat, offset in enumerate(self._offsets[identity]):
+            if selected is not None and repeat != selected:
+                continue
             row = self._read_offset(offset)
             if row[0] != identity or row[1] != 108:
                 raise BenchmarkDataError("TFRecord no longer agrees with its offset index.")
@@ -418,12 +458,15 @@ class _NasBench101:
                 "matrix": matrix.tolist() if hasattr(matrix, "tolist") else matrix,
                 "ops": list(record["module_operations"])}
 
-    def read(self, identity, stage, protocol):
+    def repeat_ids(self, identity, stage, protocol):
+        return range(len(self._api.computed_statistics[identity][protocol["budget"]]))
+
+    def read(self, identity, stage, protocol, selected=None):
         # Do not call query/get_metrics_from_hash: those return test fields too.
         entries = self._api.computed_statistics[identity][protocol["budget"]]
         field = protocol["metric"]
         return [{"repeat_id": index, "value": float(record[field]) * 100.0}
-                for index, record in enumerate(entries)]
+                for index, record in enumerate(entries) if selected is None or index == selected]
 
     def close(self):
         self._api = None
@@ -454,26 +497,33 @@ class _NasBench201:
     def structure(self, identity):
         return {"architecture_id": identity, "ops": re.findall(r"([^|+~]+)~\d+", identity)}
 
-    def read(self, identity, stage, protocol):
+    def _meta(self, identity, protocol):
         index = self._api.query_index_by_arch(identity)
         if index < 0:
             raise BenchmarkDataError("Architecture is absent from the official NB201 table.")
+        return self._api.arch2infos_dict[index][str(protocol["hp"])]
+
+    def repeat_ids(self, identity, stage, protocol):
+        return self._meta(identity, protocol).get_dataset_seeds(protocol["dataset"])
+
+    def read(self, identity, stage, protocol, selected=None):
         # Full-table mode: read the selected dataset/metric, not get_more_info(),
         # which bundles validation and test results in a single response.
-        meta = self._api.arch2infos_dict[index][str(protocol["hp"])]
+        meta = self._meta(identity, protocol)
         dataset = protocol["dataset"]
         repeats = meta.get_dataset_seeds(dataset)
         if len(repeats) != len(set(repeats)):
             raise BenchmarkDataError("Official repeat IDs are duplicated.")
         return [{"repeat_id": int(seed), "value": meta.all_results[dataset, seed].get_eval(
-            protocol["metric"], protocol["epoch_index"])["accuracy"]} for seed in repeats]
+            protocol["metric"], protocol["epoch_index"])["accuracy"]} for seed in repeats
+                if selected is None or seed == selected]
 
     def close(self):
         self._api = None
 
 
 def create_evaluator(config, benchmark_path, space):
-    """Create a sealed, all-repeat evaluator; the benchmark path is user supplied.
+    """Create a sealed evaluator; validation samples one of three official repeats.
 
     JSON values must already be percentages. Each exported record has an ops
     genotype (or NB101 matrix + node ops) and validation/test lists of

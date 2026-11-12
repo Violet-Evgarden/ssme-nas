@@ -10,6 +10,6 @@
   "search_runs": 20,
   "online_llm": false,
   "imported_performance_labels": 0,
-  "validation": {"dataset": "cifar100", "hp": 200, "epoch_index": 199, "metric": "x-valid", "repeat_aggregation": "all_available_mean"},
+  "validation": {"dataset": "cifar100", "hp": 200, "epoch_index": 199, "metric": "x-valid", "repeat_aggregation": "random_one_of_three"},
   "test": {"dataset": "cifar100", "hp": 200, "epoch_index": 199, "metric": "x-test", "repeat_aggregation": "all_available_mean", "winner_only_after_all_winners_sealed": true}
 }
